@@ -1,0 +1,12 @@
+{
+  "name": "fileuploadgql",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "cancng <me@mahmutcan.work>",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-server": "^2.19.0",
+    "apollo-server-express": "^2.19.0",
+    "cors": "^2.8.5"
+  }
+}
