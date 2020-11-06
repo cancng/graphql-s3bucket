@@ -1,4 +1,5 @@
 import { gql, useMutation } from '@apollo/client';
+import { useState } from 'react';
 
 const UPLOAD_FILE = gql`
   mutation uploadFile($file: Upload!) {
@@ -10,23 +11,28 @@ const UPLOAD_FILE = gql`
 
 const UploadForm = () => {
   const [uploadHandler, { loading }] = useMutation(UPLOAD_FILE);
-
+  const [result, setResult] = useState(null);
   const handleFileChange = async (e) => {
     if (!e.target.files[0]) return;
     try {
       const { data } = await uploadHandler({
         variables: { file: e.target.files[0] },
       });
-      console.log('data 🔫 ', data);
+      setResult(data.uploadFile.url);
     } catch (err) {
-      console.log('err 🔫 ', err);
+      console.log('HATA', err.message);
+      setResult(null);
     }
   };
   return (
     <div>
-      <h1>Upload file</h1>
       <input type='file' onChange={handleFileChange} />
-      {loading && <div>UPLOADING......</div>}
+      {loading && <div>loading...</div>}
+      {result && (
+        <div>
+          <img src={result} alt='asdkj' />
+        </div>
+      )}
     </div>
   );
 };

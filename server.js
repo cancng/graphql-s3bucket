@@ -1,9 +1,8 @@
 const { ApolloServer, gql } = require('apollo-server-express');
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
+const AWS = require('aws-sdk');
 const cors = require('cors');
-const { generateRandomStr } = require('./utils');
+const getSlug = require('speakingurl');
 
 const typeDefs = gql`
   type File {
@@ -19,21 +18,36 @@ const typeDefs = gql`
   }
 `;
 
+const s3 = new AWS.S3({
+  credentials: {
+    accessKeyId: 'AKIAJLI66R77XQIUVFHA',
+    secretAccessKey: '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',
+  },
+});
+
 const resolvers = {
   Query: {
-    hello: () => 'Hi 👋',
+    hello: () => 'deneme 👋',
   },
   Mutation: {
-    uploadFile: async (parent, { file }) => {
-      const { createReadStream, filename, mimetype, encoding } = await file;
-      const { ext } = path.parse(filename);
-      const randomName = generateRandomStr(12) + ext;
-
-      const stream = createReadStream();
-      const pathName = path.join(__dirname, `/public/images/${randomName}`);
-      await stream.pipe(fs.createWriteStream(pathName));
+    uploadFile: async (_, args) => {
+      const file = await args.file;
+      const { createReadStream, filename } = file;
+      const fileStream = createReadStream();
+      const params = {
+        ACL: 'public-read',
+        Bucket: 'interaktifis-test-bucket',
+        Key: `${new Date().getTime()}-${getSlug(filename, {
+          custom: {
+            '.': '.',
+          },
+        })}`,
+        Body: fileStream,
+      };
+      const result = await s3.upload(params).promise();
+      console.log('result ', result);
       return {
-        url: `http://localhost:4000/images/${randomName}`,
+        url: result.Location,
       };
     },
   },
@@ -46,7 +60,6 @@ const server = new ApolloServer({
 const app = express();
 app.use(cors({ origin: ['http://localhost:3000'] }));
 server.applyMiddleware({ app });
-app.use(express.static('public'));
 
 app.listen({ port: 4000 }, () => {
   console.log('🚀 Server ready at http://localhost:4000');
