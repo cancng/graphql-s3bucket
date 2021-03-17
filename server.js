@@ -20,8 +20,8 @@ const typeDefs = gql`
 
 const s3 = new AWS.S3({
   credentials: {
-    accessKeyId: 'AKIAJLI66R77XQIUVFHA',
-    secretAccessKey: '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',
+    accessKeyId: 'accessKeyId',
+    secretAccessKey: 'secretAccessKey',
   },
 });
 
